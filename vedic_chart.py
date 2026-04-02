@@ -222,6 +222,25 @@ CITY_COORDS = {
     "세종": (36.4800, 127.2590),
 }
 
+# 영문 → 한글 도시명 매핑
+CITY_NAME_EN = {
+    "seoul": "서울", "busan": "부산", "daegu": "대구", "incheon": "인천",
+    "gwangju": "광주", "daejeon": "대전", "ulsan": "울산", "suwon": "수원",
+    "changwon": "창원", "seongnam": "성남", "goyang": "고양", "yongin": "용인",
+    "cheongju": "청주", "jeonju": "전주", "cheonan": "천안", "pohang": "포항",
+    "jeju": "제주", "gimhae": "김해", "jinju": "진주", "wonju": "원주",
+    "chuncheon": "춘천", "ansan": "안산", "anyang": "안양", "pyeongtaek": "평택",
+    "iksan": "익산", "mokpo": "목포", "yeosu": "여수", "suncheon": "순천",
+    "gunsan": "군산", "gyeongju": "경주", "geoje": "거제", "tongyeong": "통영",
+    "yangsan": "양산", "gumi": "구미", "gimcheon": "김천", "andong": "안동",
+    "gangneung": "강릉", "sokcho": "속초", "donghae": "동해", "samcheok": "삼척",
+    "taebaek": "태백", "yeongju": "영주", "mungyeong": "문경", "sangju": "상주",
+    "yeongcheon": "영천", "miryang": "밀양", "sacheon": "사천", "namwon": "남원",
+    "jeongeup": "정읍", "gimje": "김제", "naju": "나주", "gwangyang": "광양",
+    "seosan": "서산", "dangjin": "당진", "asan": "아산", "nonsan": "논산",
+    "boryeong": "보령", "gongju": "공주", "sejong": "세종",
+}
+
 
 # ─── 유틸리티 ───
 
@@ -857,9 +876,17 @@ def main():
         lat, lon = args.lat, args.lon
         place = args.place or f"{lat:.4f}N, {lon:.4f}E"
     elif args.place:
-        if args.place in CITY_COORDS:
-            lat, lon = CITY_COORDS[args.place]
-            place = f"{args.place} (대한민국)"
+        # 영문 → 한글 변환, "성남시" → "성남", "서울특별시" → "서울" 등 정규화
+        import re
+        place_input = args.place.strip()
+        en_mapped = CITY_NAME_EN.get(place_input.lower())
+        if en_mapped:
+            place_input = en_mapped
+        normalized = re.sub(r'(특별자치시|특별자치도|특별시|광역시|시|군|구)$', '', place_input)
+        place_key = normalized if normalized in CITY_COORDS else place_input
+        if place_key in CITY_COORDS:
+            lat, lon = CITY_COORDS[place_key]
+            place = f"{place_key} (대한민국)"
         else:
             print(f"오류: '{args.place}' 도시를 찾을 수 없습니다.")
             print(f"지원 도시: {', '.join(sorted(CITY_COORDS.keys()))}")

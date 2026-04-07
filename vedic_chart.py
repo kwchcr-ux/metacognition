@@ -526,13 +526,13 @@ def detect_yogas(planet_data, lagna_rashi):
 
 # ─── 메인 계산 ───
 
-def calculate_chart(year, month, day, hour, minute, lat, geo_lon, gender="M"):
+def calculate_chart(year, month, day, hour, minute, lat, geo_lon, gender="M", tz_offset=9):
     """조티샤 차트 전체 계산"""
     ephe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ephe")
     swe.set_ephe_path(ephe_path)
 
-    # UTC 변환 (KST = UTC+9)
-    utc_hour = hour - 9 + minute / 60.0
+    # UTC 변환
+    utc_hour = hour - tz_offset + minute / 60.0
     utc_day = day
     utc_month = month
     utc_year = year
@@ -671,11 +671,11 @@ def calculate_chart(year, month, day, hour, minute, lat, geo_lon, gender="M"):
 
 # ─── 출력: 텍스트 ───
 
-def print_chart(chart, name, date_str, time_str, place):
+def print_chart(chart, name, date_str, time_str, place, tz_label="KST"):
     """차트 결과를 텍스트 포맷으로 출력"""
     print("=" * 65)
     print(f"  조티샤 차트 — {name}")
-    print(f"  생년월일: {date_str}  시간: {time_str} (KST)")
+    print(f"  생년월일: {date_str}  시간: {time_str} ({tz_label})")
     print(f"  출생지: {place}")
     print(f"  아야남샤 (라히리): {chart['ayanamsa']:.4f}°")
     print(f"  라그나: {chart['lagna_en']} ({chart['lagna_kr']}) {deg_to_rashi(chart['lagna_sidereal'])[1]}°{deg_to_rashi(chart['lagna_sidereal'])[2]:02d}'")
@@ -745,14 +745,14 @@ def print_chart(chart, name, date_str, time_str, place):
     print("=" * 65)
     print("  ※ 아야남샤: 라히리 (Lahiri / Chitrapaksha)")
     print("  ※ 하우스: Whole Sign (라그나 라시 = 1하우스)")
-    print("  ※ 시간대: KST (UTC+9)")
+    print(f"  ※ 시간대: {tz_label}")
     print("  ※ 천문력: Swiss Ephemeris")
     print("=" * 65)
 
 
 # ─── 출력: 마크다운 ───
 
-def print_markdown(chart, name, date_str, time_str, place):
+def print_markdown(chart, name, date_str, time_str, place, tz_label="KST"):
     """마크다운 형식 출력"""
     print()
     print("# 조티샤 정보")
@@ -761,7 +761,7 @@ def print_markdown(chart, name, date_str, time_str, place):
     print()
     print(f"- **이름**: {name}")
     print(f"- **생년월일**: {date_str}")
-    print(f"- **출생 시간**: {time_str} (KST)")
+    print(f"- **출생 시간**: {time_str} ({tz_label})")
     print(f"- **출생지**: {place}")
     print(f"- **아야남샤 (라히리)**: {chart['ayanamsa']:.4f}°")
     print(f"- **라그나 (상승궁)**: {chart['lagna_en']} ({chart['lagna_kr']}) {deg_to_rashi(chart['lagna_sidereal'])[1]}°{deg_to_rashi(chart['lagna_sidereal'])[2]:02d}'")
@@ -826,7 +826,7 @@ def print_markdown(chart, name, date_str, time_str, place):
     print("---")
     print("- 아야남샤: 라히리 (Lahiri / Chitrapaksha)")
     print("- 하우스 시스템: Whole Sign (라그나 라시 = 1하우스)")
-    print("- 시간대: KST (UTC+9)")
+    print(f"- 시간대: {tz_label}")
     print("- 천문력: Swiss Ephemeris")
 
 
@@ -846,6 +846,8 @@ def parse_args():
                         help="성별 (M/F)")
     parser.add_argument("--markdown", action="store_true",
                         help="마크다운 형식으로 출력")
+    parser.add_argument("--tz", type=float, default=9,
+                        help="시간대 UTC 오프셋 (기본: 9 = KST)")
     return parser.parse_args()
 
 
@@ -896,14 +898,23 @@ def main():
         print("오류: --place 또는 --lat/--lon을 지정해야 합니다.")
         sys.exit(1)
 
+    # 시간대 라벨
+    tz = args.tz
+    if tz == 9:
+        tz_label = "KST"
+    elif tz == int(tz):
+        tz_label = f"UTC{'+' if tz >= 0 else ''}{int(tz)}"
+    else:
+        tz_label = f"UTC{'+' if tz >= 0 else ''}{tz}"
+
     # 계산
-    chart = calculate_chart(year, month, day, hour, minute, lat, lon, args.gender)
+    chart = calculate_chart(year, month, day, hour, minute, lat, lon, args.gender, tz)
 
     # 출력
     if args.markdown:
-        print_markdown(chart, args.name, args.date, args.time, place)
+        print_markdown(chart, args.name, args.date, args.time, place, tz_label)
     else:
-        print_chart(chart, args.name, args.date, args.time, place)
+        print_chart(chart, args.name, args.date, args.time, place, tz_label)
 
 
 if __name__ == "__main__":

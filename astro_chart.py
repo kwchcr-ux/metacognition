@@ -256,15 +256,15 @@ def calculate_whole_sign_houses(asc):
     return house_cusps
 
 
-def calculate_chart(year, month, day, hour, minute, lat, geo_lon, house_system="placidus"):
+def calculate_chart(year, month, day, hour, minute, lat, geo_lon, house_system="placidus", tz_offset=9):
     """네이탈 차트 전체 계산"""
     # Swiss Ephemeris 데이터 파일 경로 (키론 등 소행성 계산에 필요)
     import os
     ephe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ephe")
     swe.set_ephe_path(ephe_path)
 
-    # UTC 변환 (KST = UTC+9)
-    utc_hour = hour - 9 + minute / 60.0
+    # UTC 변환
+    utc_hour = hour - tz_offset + minute / 60.0
     utc_day = day
     utc_month = month
     utc_year = year
@@ -393,12 +393,12 @@ def calculate_chart(year, month, day, hour, minute, lat, geo_lon, house_system="
 
 # ─── 출력 ───
 
-def print_chart(chart, name, date_str, time_str, place):
+def print_chart(chart, name, date_str, time_str, place, tz_label="KST"):
     """차트 결과를 포맷팅하여 출력"""
     print("=" * 60)
     print(f"  서양 점성술 네이탈 차트")
     print(f"  이름: {name}")
-    print(f"  생년월일: {date_str}  시간: {time_str} (KST)")
+    print(f"  생년월일: {date_str}  시간: {time_str} ({tz_label})")
     print(f"  출생지: {place}")
     print("=" * 60)
     print()
@@ -485,12 +485,12 @@ def print_chart(chart, name, date_str, time_str, place):
 
     print("=" * 60)
     print(f"  ※ 하우스 시스템: {chart['house_system']}")
-    print("  ※ 시간대: KST (UTC+9)")
+    print(f"  ※ 시간대: {tz_label}")
     print("  ※ 천문력: Swiss Ephemeris")
     print("=" * 60)
 
 
-def print_markdown(chart, name, date_str, time_str, place):
+def print_markdown(chart, name, date_str, time_str, place, tz_label="KST"):
     """contexts 파일에 붙여넣기 가능한 마크다운 형식 출력"""
     print()
     print("# 점성술 정보")
@@ -607,6 +607,8 @@ def parse_args():
     parser.add_argument("--house", type=str, default="placidus",
                         choices=["placidus", "wholesign"],
                         help="하우스 시스템 (기본: placidus)")
+    parser.add_argument("--tz", type=float, default=9,
+                        help="시간대 UTC 오프셋 (기본: 9 = KST)")
     return parser.parse_args()
 
 
@@ -658,14 +660,23 @@ def main():
         print("오류: --place 또는 --lat/--lon을 지정해야 합니다.")
         sys.exit(1)
 
+    # 시간대 라벨
+    tz = args.tz
+    if tz == 9:
+        tz_label = "KST"
+    elif tz == int(tz):
+        tz_label = f"UTC{'+' if tz >= 0 else ''}{int(tz)}"
+    else:
+        tz_label = f"UTC{'+' if tz >= 0 else ''}{tz}"
+
     # 계산
-    chart = calculate_chart(year, month, day, hour, minute, lat, lon, args.house)
+    chart = calculate_chart(year, month, day, hour, minute, lat, lon, args.house, tz)
 
     # 출력
     if args.markdown:
-        print_markdown(chart, args.name, args.date, args.time, place)
+        print_markdown(chart, args.name, args.date, args.time, place, tz_label)
     else:
-        print_chart(chart, args.name, args.date, args.time, place)
+        print_chart(chart, args.name, args.date, args.time, place, tz_label)
 
 
 if __name__ == "__main__":

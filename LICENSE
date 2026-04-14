@@ -3,10 +3,14 @@
 Copyright (c) 2026 장경원 (Jang Kyungwon)
 kwchcr@gmail.com
 
-이 저작물은 크리에이티브 커먼즈 저작자표시-비영리 4.0 국제 라이선스
-(CC BY-NC 4.0)에 따라 이용할 수 있습니다.
+이 저작물은 크리에이티브 커먼즈 저작자표시-비영리-동일조건변경허락 4.0 국제 라이선스
+(CC BY-NC-SA 4.0)에 따라 이용할 수 있습니다.
 
-라이선스 전문: https://creativecommons.org/licenses/by-nc/4.0/deed.ko
+- 저작자표시(BY): 원저작자(장경원)를 명시해야 합니다.
+- 비영리(NC): 상업적 목적으로 사용할 수 없습니다.
+- 동일조건변경허락(SA): 수정·배포 시 동일한 라이선스를 적용해야 합니다.
+
+라이선스 전문: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ko
 
 ────────────────────────────────────────
 
@@ -16,5 +20,14 @@ kwchcr@gmail.com
 운세 예측, 점술, 미래 예언 등의 목적으로 수정·배포하는 것을 금지합니다.
 
 문의: kwchcr@gmail.com
+
+────────────────────────────────────────
+
+서드파티 라이선스:
+
+ephe/ 디렉토리의 Swiss Ephemeris 데이터 파일(seas_18.se1, semo_18.se1, sepl_18.se1)은
+Astrodienst AG의 Swiss Ephemeris 라이선스(AGPL 또는 상업용)에 따릅니다.
+본 프로젝트의 CC BY-NC-SA 4.0 라이선스는 ephe/ 파일에 적용되지 않습니다.
+Swiss Ephemeris 라이선스: https://www.astro.com/swisseph/
 
 ────────────────────────────────────────
